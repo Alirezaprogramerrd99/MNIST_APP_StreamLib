@@ -125,6 +125,7 @@ def visualizeBatch(example_data):
 batch_idx, (example_data, example_targets) = itr_bathces(
     st.session_state.count_batch, train_loader)
 
+st.sidebar.markdown('## some visualization options')
 show_batchId = st.sidebar.checkbox('show batch_id')
 show_exampleData = st.sidebar.checkbox('show exampleData')
 show_exampleTargets = st.sidebar.checkbox('show exampleLabels')
@@ -151,6 +152,7 @@ if show_DataNumbers:
 
 
 # --------------------------------- creating model --------------------------------
+st.sidebar.markdown('## training plot')
 
 if learning_rate != '' and n_epochs != '':
 
@@ -208,5 +210,44 @@ if learning_rate != '' and n_epochs != '':
             latest_iteration.text(f'epoch {epoch}')
             train(epoch)
             test()
-            bar.progress(epoch + 1)
+            bar.progress(epoch + (100 // n_epochs) + 1)
             time.sleep(0.1)
+
+        # if 'losses' not in st.session_state:
+        #     st.session_state.losses = (train_losses, test_losses)
+        st.markdown('### train loss plot')
+        st.line_chart(train_losses)
+        st.markdown('### test loss plot')
+        st.line_chart(test_losses)
+
+       # show_learningCurve = st.sidebar.checkbox('show learningCurve')
+
+        # if show_learningCurve:
+
+        # st.line_chart(st.session_state.losses[0])
+        # st.line_chart(st.session_state.losses[1])
+        # x_train = list(range(len(train_losses)))
+        # x_test = list(range(len(test_losses)))
+
+        # fig = plt.figure()
+        # plt.plot(train_losses, color='blue')
+        # plt.plot(test_losses, color='red')
+        # plt.legend(['Train Loss', 'Test Loss'], loc='upper right')
+        # plt.xlabel('number of training examples seen')
+        # plt.ylabel('negative log likelihood loss')
+        # st.write(fig)
+
+        with torch.no_grad():
+            output = network(example_data)
+        fig = plt.figure()
+        for i in range(6):
+            plt.subplot(2, 3, i+1)
+            plt.tight_layout()
+            plt.imshow(example_data[i][0], cmap='gray', interpolation='none')
+            plt.title("Prediction: {}".format(
+                output.data.max(1, keepdim=True)[1][i].item()))
+            plt.xticks([])
+            plt.yticks([])
+
+        st.markdown('## Model prediction:')
+        st.write(fig)
